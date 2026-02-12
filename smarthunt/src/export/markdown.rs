@@ -1,6 +1,7 @@
 //! Markdown output formatter.
 
-use crate::output::formatter::{AnalysisReport, OutputFormatter, format_location};
+use crate::export::formatter::{OutputFormatter, format_location};
+use crate::report::ExportReport;
 use bugs::bug::RiskLevel;
 
 /// Markdown output formatter.
@@ -14,7 +15,7 @@ impl MarkdownFormatter {
 }
 
 impl OutputFormatter for MarkdownFormatter {
-    fn format(&self, report: &AnalysisReport) -> String {
+    fn format(&self, report: &ExportReport) -> String {
         let mut output = String::new();
 
         // Header
@@ -141,7 +142,7 @@ mod tests {
 
     #[test]
     fn test_markdown_formatter() {
-        let report = AnalysisReport::new(vec![], vec![], Duration::from_secs(1));
+        let report = ExportReport::new(vec![], vec![], Duration::from_secs(1));
         let formatter = MarkdownFormatter::new();
         let output = formatter.format(&report);
         assert!(output.contains("# SmartHunt Analysis Report"));

@@ -5,20 +5,9 @@
 use clap::{Parser, Subcommand, crate_version};
 use extlib::error;
 use smarthunt::{
-    AnalysisConfig,
-    AnalysisContext,
-    AnalysisReport,
-    Config,
-    DetectorRegistry,
-    JsonFormatter,
-    MarkdownFormatter,
-    OutputFormat,
-    OutputFormatter,
-    PipelineConfig,
-    PipelineEngine,
-    SarifFormatter,
-    SeverityFilter,
-    register_all_detectors,
+    AnalysisConfig, AnalysisContext, Config, DetectorRegistry, ExportReport, JsonFormatter,
+    MarkdownFormatter, OutputFormat, OutputFormatter, PipelineConfig, PipelineEngine,
+    SarifFormatter, SeverityFilter, TextFormatter, register_all_detectors,
 };
 use solidity::{
     ast::SourceUnit, ast::utils::export::export_debugging_source_unit, parser::parse_input_file,
@@ -401,14 +390,18 @@ fn run_analysis(args: Arguments) {
     if args.debug {
         eprintln!(
             "Running pipeline ({} threads)...",
-            if config.num_threads > 1 { config.num_threads } else { 1 }
+            if config.num_threads > 1 {
+                config.num_threads
+            } else {
+                1
+            }
         );
     }
 
     let result = engine.run(&mut context);
 
     // Create report
-    let report = AnalysisReport::new(result.bugs, files_analyzed, result.total_duration);
+    let report = ExportReport::new(result.bugs, files_analyzed, result.total_duration);
 
     // Format output
     let output = match config.output_format {
@@ -424,7 +417,10 @@ fn run_analysis(args: Arguments) {
             let formatter = SarifFormatter::new(true);
             formatter.format(&report)
         }
-        OutputFormat::Text => format_text_output(&report),
+        OutputFormat::Text => {
+            let formatter = TextFormatter::new();
+            formatter.format(&report)
+        }
     };
 
     // Write output
@@ -445,55 +441,4 @@ fn run_analysis(args: Arguments) {
     if report.has_high_severity() {
         std::process::exit(1);
     }
-}
-
-fn format_text_output(report: &AnalysisReport) -> String {
-    let mut output = String::new();
-
-    output.push_str(&format!(
-        "SmartHunt Analysis Report\n\
-         =========================\n\n\
-         Files analyzed: {}\n\
-         Duration: {:.2}s\n\n",
-        report.files_analyzed.len(),
-        report.duration.as_secs_f64()
-    ));
-
-    output.push_str(&format!(
-        "Summary:\n\
-         - Critical: {}\n\
-         - High: {}\n\
-         - Medium: {}\n\
-         - Low: {}\n\
-         - Info: {}\n\
-         - Total: {}\n\n",
-        report.stats.bugs_by_severity.critical,
-        report.stats.bugs_by_severity.high,
-        report.stats.bugs_by_severity.medium,
-        report.stats.bugs_by_severity.low,
-        report.stats.bugs_by_severity.info,
-        report.total_bugs(),
-    ));
-
-    if report.bugs.is_empty() {
-        output.push_str("✅ No issues found!\n");
-    } else {
-        output.push_str("Findings:\n");
-        output.push_str("---------\n\n");
-
-        for (i, bug) in report.bugs.iter().enumerate() {
-            output.push_str(&format!("{}. [{}] {}\n", i + 1, bug.risk_level, bug.name));
-
-            output
-                .push_str(&format!("   Location: {}:{}\n", bug.loc.start_line, bug.loc.start_col));
-
-            if let Some(desc) = &bug.description {
-                output.push_str(&format!("   {}\n", desc));
-            }
-
-            output.push('\n');
-        }
-    }
-
-    output
 }

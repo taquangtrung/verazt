@@ -1,10 +1,13 @@
-//! Output formatter trait.
+//! Export report data structures.
+//!
+//! Contains the main report types used for presenting analysis results
+//! through various output formatters.
 
 use bugs::bug::Bug;
 use std::time::Duration;
 
-/// Analysis report containing all findings.
-pub struct AnalysisReport {
+/// Export report containing all findings for output formatting.
+pub struct ExportReport {
     /// All bugs found
     pub bugs: Vec<Bug>,
 
@@ -50,8 +53,8 @@ pub struct BugsBySeverity {
     pub info: usize,
 }
 
-impl AnalysisReport {
-    /// Create a new analysis report.
+impl ExportReport {
+    /// Create a new export report.
     pub fn new(bugs: Vec<Bug>, files_analyzed: Vec<String>, duration: Duration) -> Self {
         let mut stats = AnalysisStats::default();
 
@@ -90,21 +93,4 @@ impl AnalysisReport {
     pub fn has_high_severity(&self) -> bool {
         self.stats.bugs_by_severity.critical > 0 || self.stats.bugs_by_severity.high > 0
     }
-}
-
-/// Trait for output formatters.
-pub trait OutputFormatter {
-    /// Format the analysis report.
-    fn format(&self, report: &AnalysisReport) -> String;
-
-    /// Get the file extension for this format.
-    fn extension(&self) -> &'static str;
-
-    /// Get the content type for this format.
-    fn content_type(&self) -> &'static str;
-}
-
-/// Format a location for display.
-pub fn format_location(bug: &Bug) -> String {
-    format!("<unknown>:{}:{}", bug.loc.start_line, bug.loc.start_col,)
 }

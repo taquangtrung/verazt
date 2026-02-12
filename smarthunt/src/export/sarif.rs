@@ -3,7 +3,8 @@
 //! SARIF (Static Analysis Results Interchange Format) is a standard format
 //! for the output of static analysis tools.
 
-use crate::output::formatter::{AnalysisReport, OutputFormatter};
+use crate::export::formatter::OutputFormatter;
+use crate::report::ExportReport;
 use bugs::bug::RiskLevel;
 use serde::{Deserialize, Serialize};
 
@@ -21,7 +22,7 @@ impl SarifFormatter {
 }
 
 impl OutputFormatter for SarifFormatter {
-    fn format(&self, report: &AnalysisReport) -> String {
+    fn format(&self, report: &ExportReport) -> String {
         let sarif = SarifLog::from(report);
         if self.pretty {
             serde_json::to_string_pretty(&sarif)
@@ -161,8 +162,8 @@ pub struct SarifInvocation {
     pub end_time_utc: String,
 }
 
-impl From<&AnalysisReport> for SarifLog {
-    fn from(report: &AnalysisReport) -> Self {
+impl From<&ExportReport> for SarifLog {
+    fn from(report: &ExportReport) -> Self {
         // Collect unique rules from bugs
         let mut rules_map = std::collections::HashMap::new();
         for bug in &report.bugs {
@@ -259,7 +260,7 @@ mod tests {
 
     #[test]
     fn test_sarif_formatter() {
-        let report = AnalysisReport::new(vec![], vec![], Duration::from_secs(1));
+        let report = ExportReport::new(vec![], vec![], Duration::from_secs(1));
         let formatter = SarifFormatter::new(true);
         let output = formatter.format(&report);
         assert!(output.contains("\"$schema\""));

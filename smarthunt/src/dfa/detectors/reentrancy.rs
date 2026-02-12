@@ -329,7 +329,11 @@ impl Pass for ReentrancyDfaDetector {
     }
 
     fn dependencies(&self) -> Vec<PassId> {
-        vec![PassId::SymbolTable, PassId::CallGraph, PassId::ModifierAnalysis]
+        vec![
+            PassId::SymbolTable,
+            PassId::CallGraph,
+            PassId::ModifierAnalysis,
+        ]
     }
 }
 

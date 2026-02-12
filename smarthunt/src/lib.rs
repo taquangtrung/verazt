@@ -47,8 +47,11 @@ pub mod analysis;
 // Pipeline orchestration framework
 pub mod pipeline;
 
-// Output formatting
-pub mod output;
+// Report data structures
+pub mod report;
+
+// Export formatting
+pub mod export;
 
 // CLI configuration
 pub mod config;
@@ -65,8 +68,9 @@ pub use pipeline::{
     register_all_detectors,
 };
 
-// Re-export output types
+// Re-export report and export types
 pub use config::{Config, OutputFormat, SeverityFilter};
-pub use output::{
-    AnalysisReport, JsonFormatter, MarkdownFormatter, OutputFormatter, SarifFormatter,
+pub use export::{
+    JsonFormatter, MarkdownFormatter, OutputFormatter, SarifFormatter, TextFormatter,
 };
+pub use report::ExportReport;

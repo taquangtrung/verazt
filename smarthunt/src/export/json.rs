@@ -1,6 +1,7 @@
 //! JSON output formatter.
 
-use crate::output::formatter::{AnalysisReport, OutputFormatter};
+use crate::export::formatter::OutputFormatter;
+use crate::report::ExportReport;
 use bugs::bug::Bug;
 use serde::{Deserialize, Serialize};
 
@@ -18,7 +19,7 @@ impl JsonFormatter {
 }
 
 impl OutputFormatter for JsonFormatter {
-    fn format(&self, report: &AnalysisReport) -> String {
+    fn format(&self, report: &ExportReport) -> String {
         let json_report = JsonReport::from(report);
         if self.pretty {
             serde_json::to_string_pretty(&json_report)
@@ -95,8 +96,8 @@ pub struct JsonLocation {
     pub end_column: Option<usize>,
 }
 
-impl From<&AnalysisReport> for JsonReport {
-    fn from(report: &AnalysisReport) -> Self {
+impl From<&ExportReport> for JsonReport {
+    fn from(report: &ExportReport) -> Self {
         Self {
             version: report.version.clone(),
             timestamp: report.timestamp.to_rfc3339(),
@@ -144,7 +145,7 @@ mod tests {
 
     #[test]
     fn test_json_formatter() {
-        let report = AnalysisReport::new(vec![], vec![], Duration::from_secs(1));
+        let report = ExportReport::new(vec![], vec![], Duration::from_secs(1));
         let formatter = JsonFormatter::new(true);
         let output = formatter.format(&report);
         assert!(output.contains("\"version\""));
